@@ -1,0 +1,14 @@
+node_modules/
+.env
+*.log
+logs/
+data/
+*.db
+*.db-shm
+*.db-wal
+.DS_Store
+coverage/
+.nyc_output/
+
+# Documentation
+docs/database.md

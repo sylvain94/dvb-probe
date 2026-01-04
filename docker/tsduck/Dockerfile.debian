@@ -1,0 +1,36 @@
+FROM debian:stable-slim
+
+# Install minimal dependencies
+RUN apt-get update && apt-get install -y \
+    libc6 \
+    libstdc++6 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create directories for TSDuck and libraries
+RUN mkdir -p /usr/bin /opt/tsduck/lib /usr/lib/tsduck /usr/share/tsduck
+
+# Copy shared libraries (if libs directory exists and is not empty)
+COPY libs/ /opt/tsduck/lib/
+
+# Copy TSDuck binary from host
+COPY tsp /usr/bin/tsp
+
+# Make it executable
+RUN chmod +x /usr/bin/tsp
+
+# Copy TSDuck plugins if they exist
+COPY tsduck_plugins/ /usr/lib/tsduck/
+
+# Copy TSDuck configuration files (if tsduck_share directory exists)
+# This includes tsduck.hfbands.xml and other configuration files
+COPY tsduck_share/ /usr/share/tsduck/
+
+# Set library path
+ENV LD_LIBRARY_PATH=/opt/tsduck/lib:/lib/x86_64-linux-gnu
+
+# Verify TSDuck is available (skip if it fails, we'll test at runtime)
+RUN echo "TSDuck binary and libraries copied"
+
+# Keep container running
+CMD ["/bin/sh", "-c", "while true; do sleep 3600; done"]
+

@@ -1,0 +1,88 @@
+services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: dvb-probe-mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-rootpassword}
+      - MYSQL_DATABASE=${DB_NAME:-dvb_probe}
+      - MYSQL_USER=${DB_USER:-dvbprobe}
+      - MYSQL_PASSWORD=${DB_PASSWORD:-dvbprobe}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../docker/backend/Dockerfile
+    container_name: dvb-probe-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - TSDUCK_PATH=/usr/bin/tsp
+      - TSDUCK_CONTAINER=dvb-probe-tsduck
+      - DB_TYPE=mariadb
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_USER=${DB_USER:-dvbprobe}
+      - DB_PASSWORD=${DB_PASSWORD:-dvbprobe}
+      - DB_NAME=${DB_NAME:-dvb_probe}
+    volumes:
+      - ../backend/logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      tsduck:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/frontend/Dockerfile
+    container_name: dvb-probe-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  tsduck:
+    image: dvb-probe-tsduck:local
+    container_name: dvb-probe-tsduck
+    command: /bin/sh -c "while true; do sleep 3600; done"
+    network_mode: host
+    # Alternative: use bridge network with exposed ports (if network_mode: host doesn't work)
+    # network_mode: bridge
+    # ports:
+    #   - "5004:5004/udp"
+    #   - "5005:5005/udp"  # Add other UDP ports as needed
+    volumes:
+      # Mount TSDuck configuration files from host (optional, if not included in image)
+      - /usr/share/tsduck:/usr/share/tsduck:ro
+    restart: unless-stopped
+    cap_add:
+      - NET_RAW  # Required for raw sockets (UDP multicast)
+      - NET_ADMIN  # May be needed for some network operations
+
+volumes:
+  mariadb_data:
+
+
