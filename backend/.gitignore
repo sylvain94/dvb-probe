@@ -1,14 +1,22 @@
+# Node modules
 node_modules/
-.env
+
+# Data
+data/
+
+# Logs
 *.log
 logs/
-data/
-*.db
-*.db-shm
-*.db-wal
-.DS_Store
-coverage/
+
+# Environment variables
+.env
+
+# Test coverage
 .nyc_output/
+coverage/
+
+# System files
+.DS_Store
 
 # Documentation
 docs/database.md

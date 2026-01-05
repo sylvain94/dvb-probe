@@ -1,6 +1,6 @@
 # DVB Probe
 
-DVB probe for the 24/7 continuous analysis of UDP/RTP MPEG-TS streams based on TSDuck.
+DVB probe for the 24/7 continuous analysis of UDP/RTP MPEG-TS streams based on [TSDuck](https://tsduck.io/).
 
 ## Description
 
@@ -72,7 +72,7 @@ Ensure that TSDuck is installed and accessible in the PATH or configure the path
 ## Use
 
 The web interface will be accessible on http://localhost:5173
-The API documentation will be accessible on http://localhost:3000/api-docs/
+The API documentation will be accessible on [swagger](http://localhost:3000/api-docs/)
 
 ### Start-up in production
 
