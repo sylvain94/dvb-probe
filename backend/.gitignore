@@ -20,3 +20,7 @@ coverage/
 
 # Documentation
 docs/database.md
+docs/model.md
+
+# Package manager
+package-lock.json
